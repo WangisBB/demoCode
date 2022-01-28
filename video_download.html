@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title></title>
+	</head>
+	<body>
+		<button type="button" onclick="start_download()">download</button>
+		<script type="text/javascript">
+
+
+		</script>
+		<script type="text/javascript">
+			function download(data) {
+				let blob = new Blob([data], {
+					type: 'video/mp4'
+				})
+				let a = document.createElement("a");
+				a.href = getBlobURL(blob);
+				a.setAttribute("download", 'xxx.mp4');
+				a.click();
+			}
+			
+			var getBlobURL = (window.URL && URL.createObjectURL.bind(URL)) ||
+				(window.webkitURL && webkitURL.createObjectURL.bind(webkitURL)) ||
+				window.createObjectURL;
+
+			function start_download() {
+				xhr = new XMLHttpRequest()
+				xhr.open('GET', 'https://v26-web.douyinvod.com/0b21d950ee561542de501183f61d0037/61f3ba8c/video/tos/cn/tos-cn-ve-15-alinc2/7eb34110bcd944169d3a741958dbf6a6/?a=6383&br=355&bt=355&cd=0%7C0%7C0%7C0&ch=26&cr=0&cs=0&cv=1&dr=0&ds=3&er=&ft=VgcwUVIIL7ThWHtW7LAGZ&l=021643190140597fdbddc0100fff0030ac330310000001c7399e1&lr=all&mime_type=video_mp4&net=0&pl=0&qs=0&rc=anZzZDo6ZjtoOjMzNGkzM0ApNjVoNTszODs0NzZnNGk0Z2dzX2hhcjQwc2pgLS1kLTBzcy8tLWFfXzYuYl9jMTIvMWE6Yw%3D%3D&vl=&vr=');
+				xhr.responseType = "blob"
+				xhr.onreadystatechange = function() {
+					if (xhr.readyState == 4 && xhr.status == 200) {
+						console.log(xhr);
+						download(xhr.response)
+					}
+				}
+				xhr.send(null)
+			}
+		</script>
+	</body>
+</html>

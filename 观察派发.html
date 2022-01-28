@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        class Event {
+            constructor() {
+                this.Observer = {};
+            }
+            $on(name, cb) {
+                (this.Observer[name] || (this.Observer[name] = [])).push(cb)
+                    // if (!this.Observer[name]) {
+                    //     this.Observer[name] = [];
+                    //     this.Observer[name].push(name);
+                    // }
+            }
+            $emit(name) {
+                this.Observer[name] && this.Observer[name].forEach(el => {
+                    el.call(this, arguments);
+                });
+            }
+            $off(name) {
+                this.Observer[name];
+                delete this.Observer[name];
+            }
+        }
+        let e = new Event();
+        e.$on("event1", arg => {
+            console.log(arg)
+        });
+        setTimeout(() => {
+            e.$emit("event1", 111);
+        }, 2000);
+
+        // e.$off("event1", () => {
+        //     console.log("off")
+        // })
+        // e.$emit("event1", () => {
+        //     console.log("emit")
+        // })
+    </script>
+</body>
+
+</html>
