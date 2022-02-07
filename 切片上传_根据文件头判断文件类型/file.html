@@ -11,7 +11,7 @@
 
     <script type="text/javascript">
         async function fileChange(e) {
-            if (e.files.length > 0 && await valid(e.files[0], 'jpg,png,ico')) {
+            if (e.files.length > 0 && await valid(e.files[0], 'jpg,png,gif')) {
                 let blobArray = sliceUp(e.files[0], 10 * 1024)
                 sendblob(blobArray, 5, e.files[0].size)
             }
@@ -80,7 +80,6 @@
                         computeProgress(blob.name, progressEvent.loaded, progressEvent.total)
                     }
                 }))).then((list) => {
-                    console.log(list);
                     blobArray.splice(0, num)
                     if (blobArray.length > 0) {
                         send(blobArray.slice(0, num))
@@ -98,6 +97,7 @@
                 throw Error('仅支持Blob验证')
                     // return false
             }
+			if(!accept)return;
             const Ext2Hex = {
                 'jpg': /^(ffd8ffe)[0-4]{1}/,
                 'png': /^(89504e47){1}/,

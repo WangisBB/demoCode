@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+
+		<button type="button" id="openIndexedDB">openIndexedDB</button>
+
+		<script src="./event.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="module">
+			import indexedDB from "./indexedDB.js";
+			const dbName = "tevst";
+			const dbVersion = 1.1;
+			let db = null
+
+
+			getDom('#openIndexedDB').addEventListener('click', function(e) {
+				db = new indexedDB(dbName, dbVersion)
+				console.log(db)
+			})
+		</script>
+
+	</body>
+</html>
