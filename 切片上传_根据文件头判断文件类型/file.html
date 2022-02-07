@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+
+<body>
+    <input type="file" id="file" onchange="fileChange(this)" />
+
+    <script type="text/javascript">
+        async function fileChange(e) {
+            if (e.files.length > 0 && await valid(e.files[0], 'jpg,png,ico')) {
+                let blobArray = sliceUp(e.files[0], 10 * 1024)
+                sendblob(blobArray, 5, e.files[0].size)
+            }
+        }
+
+        function sliceUp(blob, bytesPerPiece = 5 * 1024 * 1024) {
+            let start = 0,
+                end = 0,
+                index = 0,
+                filesize = blob.size,
+                blobArray = [];
+            //计算文件切片总数
+            const totalPieces = Math.ceil(filesize / bytesPerPiece);
+
+            while (index < totalPieces) {
+                start = index * bytesPerPiece;
+                //++index === totalPieces  最后一片
+                end = ++index === totalPieces ? filesize : index * bytesPerPiece
+                const chunk = blob.slice(start, end); //切割文件    
+
+                blobArray.push({
+                    file: chunk,
+                    name: `${blob.name}(${index})`,
+                    type: blob.type
+                })
+            }
+            return blobArray
+        }
+
+        //模拟axios上传
+        let _http = (data, ...config) => {
+            console.log(data, ...config);
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(data.name + 'success')
+                }, 1000)
+            })
+        }
+
+        function sendblob(blobArray, num, totalSize) {
+            // totalSize用来计算总进度 progressObj存储每一片的上传进度
+            let progressObj = {}
+                //计算进度条
+            function computeProgress(key, loaded, total) {
+                progressObj[key] = {
+                    loaded,
+                    total,
+                    issuccess: loaded === total,
+                    key
+                }
+                let progress = 0
+                if (progressObj) {
+                    for (key in progressObj) {
+                        progress += progressObj[key].loaded
+                    }
+                }
+                if (totalSize > progress && progress > 0) {
+                    return progress / totalSize * 100 + '%'
+                }
+                return '0%'
+            }
+            //递归上传，每次五条，成功后继续
+            function send(fncarray) {
+                return Promise.all(fncarray.map(blob => _http(blob, {
+                    onUploadProgress: progressEvent => {
+                        computeProgress(blob.name, progressEvent.loaded, progressEvent.total)
+                    }
+                }))).then((list) => {
+                    console.log(list);
+                    blobArray.splice(0, num)
+                    if (blobArray.length > 0) {
+                        send(blobArray.slice(0, num))
+                        return
+                    }
+                })
+            }
+            send(blobArray.slice(0, num))
+        }
+
+
+
+        async function valid(file, accept) { //根据文件头验证文件类型
+            if (!file instanceof Blob) {
+                throw Error('仅支持Blob验证')
+                    // return false
+            }
+            const Ext2Hex = {
+                'jpg': /^(ffd8ffe)[0-4]{1}/,
+                'png': /^(89504e47){1}/,
+                'ico': /^(100){1}/,
+                'gif': /^(47494638){1}/
+            }
+            let first4Byte = new DataView(await file.arrayBuffer()).getUint32(0, false),
+                uint32 = Number(first4Byte).toString(16);
+
+            return Object.keys(Ext2Hex).some(key => {
+                if (accept.indexOf(key) > -1) {
+                    return Ext2Hex[key].test(uint32)
+                }
+            })
+        }
+    </script>
+
+</body>
+
+</html>
