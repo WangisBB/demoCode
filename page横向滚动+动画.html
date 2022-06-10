@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body,
+      #box {
+        height: 100%;
+        width: 100%;
+      }
+      #box {
+        display: flex;
+        overflow-x: scroll;
+        transition: all 1s;
+      }
+      #box > div {
+        width: 100vw;
+        height: 100%;
+        flex-shrink: 0;
+      }
+      #box > div:nth-child(1) {
+        background-color: aquamarine;
+      }
+      #box > div:nth-child(2) {
+        background-color: antiquewhite;
+      }
+      #box > div:nth-child(3) {
+        background-color: burlywood;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="box">
+      <div>page1</div>
+      <div>page2</div>
+      <div>page3</div>
+    </div>
+  </body>
+  <script>
+    let box = document.getElementById("box"),
+      pageindex,
+      flag = false;
+    const offsetWidth = document.querySelector("#box>div").offsetWidth;
+
+    document.body.addEventListener(
+      "wheel",
+      (event) => {
+        event.preventDefault();
+
+        if (!flag) {
+          let being = new SetAttr(box, "scrollLeft", "easeInOutCubic");
+          console.log(being);
+          event.deltaY > 0 ? being.run(offsetWidth) : being.run(-offsetWidth);
+          flag = true;
+          being.on("end", function () {
+            pageindex = Math.ceil(box.scrollLeft / offsetWidth);
+            flag = false;
+          });
+        }
+      },
+      { passive: false }
+    );
+    class Curve {
+      cubic = (value) => Math.pow(value, 3);
+      easeInOutCubic = (value) =>
+        value < 0.5
+          ? this.cubic(value * 2) / 2
+          : 1 - this.cubic((1 - value) * 2) / 2;
+      easeInCubic = (value) => this.cubic(value);
+      easeOutCubic = (value) => 1 - this.cubic(1 - value);
+    }
+
+    class SetAttr extends Curve {
+      eventBus = {
+        start: [],
+        end: [],
+      };
+      constructor(el, attr, transition = "easeInCubic", time = 800) {
+        super();
+        this.el = el;
+        this.attr = attr;
+        this.transition = transition;
+        this.time = time;
+      }
+      run(distance, transition, time) {
+        const beginTime = Date.now();
+        const start = this.el[this.attr];
+        this.eventBus["start"].forEach((fn) => {
+          fn.apply(this, arguments);
+        });
+        const rAF =
+          window.requestAnimationFrame || ((func) => setTimeout(func, 16));
+        const frameFunc = () => {
+          const progress = (Date.now() - beginTime) / (time || this.time);
+          if (progress < 1) {
+            this.el[this.attr] =
+              start + distance * this[transition || this.transition](progress);
+            rAF(frameFunc);
+          } else {
+            this.el[this.attr] = start + distance;
+            this.eventBus["end"].forEach((fn) => {
+              fn.apply(this, arguments);
+            });
+          }
+        };
+        rAF(frameFunc);
+      }
+      on(type, fn) {
+        if (this.eventBus[type]) {
+          this.eventBus[type].push(fn);
+        }
+      }
+    }
+  </script>
+</html>
