@@ -1,17 +1,16 @@
 # dependencies
 node_modules
-
+node_modules/
 # logs
 npm-debug.log
 
 # Nuxt build
 .nuxt
-
+.nuxt/
 # Nuxt generate
-
-node_modules/
 .idea
+.idea/
 dist
-
+dist/
 .vscode
-.*\.zip
+.vscode/
